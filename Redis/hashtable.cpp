@@ -149,8 +149,6 @@ static void hm_start_resizing(HMap* hmap) {
     hmap->resizing_pos = 0;
 }
 
-const size_t k_min_load_factor = 4; // TODO: make it dynamically smaller under min load
-
 Node* hm_pop(
     HMap* hmap, Node* key, bool (*cmp)(Node*, Node*))
 {
