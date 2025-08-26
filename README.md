@@ -1,4 +1,4 @@
-Building Redis from Scratch using C/C++
+Building Redis from Scratch using JAVA
 
 with the help of a book:
 
