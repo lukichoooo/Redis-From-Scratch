@@ -1,4 +1,3 @@
-package hashtable;
 
 public class HashTable<T> {
 
@@ -147,5 +146,18 @@ public class HashTable<T> {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    public Object keySet() {
+        Object[] keys = new Object[size];
+        int index = 0;
+        for (Node<T> head : table) {
+            Node<T> node = head;
+            while (node != null) {
+                keys[index++] = node.key;
+                node = node.next;
+            }
+        }
+        return keys;
     }
 }
