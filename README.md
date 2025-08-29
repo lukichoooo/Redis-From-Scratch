@@ -1,9 +1,8 @@
-Building Redis from Scratch using JAVA
+Build Your Own Redis in Java
 
-with the help of a book:
+This project is a Java implementation of a Redis in memory database, inspired by Build Your Own Redis with C/C++ by James Smith (build-your-own.org).
 
-Build Your Own
-Redis with C/C++
+Custom Implementations of SkipList for sorted sets, HashTable for fast lookups
 
-James Smith
-build-your-own.org
+Testing: JUnit 5 tests for all major operations
+Build & Dependency Management: Maven
