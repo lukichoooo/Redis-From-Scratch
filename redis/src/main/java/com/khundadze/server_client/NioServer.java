@@ -1,3 +1,4 @@
+package com.khundadze.server_client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,10 +11,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import model.Command;
-import model.RequestDto;
-import model.ResponseDto;
-import model.ServerType;
+
+import com.khundadze.data_structures.HashTable;
+
+import com.khundadze.model.*;
 
 public class NioServer {
 

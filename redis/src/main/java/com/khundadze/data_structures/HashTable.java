@@ -1,18 +1,24 @@
+package com.khundadze.data_structures;
 
-public class HashTable<T> {
+public class HashTable<V> {
 
-    private static class Node<T> {
+    public static class Node<V> {
         final int key;
-        T value;
-        Node<T> next;
+        V value;
+        Node<V> next;
 
-        Node(int key, T value) {
+        Node(int key, V value) {
             this.key = key;
             this.value = value;
         }
+
+        @Override
+        public String toString() {
+            return key + ":" + value;
+        }
     }
 
-    private Node<T>[] table;
+    private Node<V>[] table;
     private int size;
     private int capacity;
     private final float loadFactor;
@@ -28,6 +34,7 @@ public class HashTable<T> {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
+    @SuppressWarnings("unchecked")
     public HashTable(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0) {
             throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
@@ -52,26 +59,27 @@ public class HashTable<T> {
         return h & (capacity - 1);
     }
 
-    public void put(int key, T value) {
+    public Node<V> put(int key, V value) {
         if (size >= capacity * loadFactor) {
             resize();
         }
         int index = hash(key);
-        for (Node<T> node = table[index]; node != null; node = node.next) {
+        for (Node<V> node = table[index]; node != null; node = node.next) {
             if (node.key == key) {
                 node.value = value;
-                return;
+                return null;
             }
         }
-        Node<T> newNode = new Node<>(key, value);
+        Node<V> newNode = new Node<>(key, value);
         newNode.next = table[index];
         table[index] = newNode;
         size++;
+        return newNode;
     }
 
-    public T get(int key) {
+    public V get(int key) {
         int index = hash(key);
-        for (Node<T> node = table[index]; node != null; node = node.next) {
+        for (Node<V> node = table[index]; node != null; node = node.next) {
             if (node.key == key) {
                 return node.value;
             }
@@ -79,14 +87,18 @@ public class HashTable<T> {
         return null;
     }
 
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
     public boolean containsKey(int key) {
         return get(key) != null;
     }
 
-    public T remove(int key) {
+    public V remove(int key) {
         int index = hash(key);
-        Node<T> node = table[index];
-        Node<T> prev = null;
+        Node<V> node = table[index];
+        Node<V> prev = null;
 
         while (node != null) {
             if (node.key == key) {
@@ -104,6 +116,7 @@ public class HashTable<T> {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private void resize() {
         int oldCapacity = capacity;
         if (oldCapacity == MAXIMUM_CAPACITY) {
@@ -111,12 +124,12 @@ public class HashTable<T> {
         }
 
         capacity = oldCapacity << 1;
-        Node<T>[] oldTable = table;
+        Node<V>[] oldTable = table;
         table = new Node[capacity];
         size = 0;
 
-        for (Node<T> head : oldTable) {
-            Node<T> node = head;
+        for (Node<V> head : oldTable) {
+            Node<V> node = head;
             while (node != null) {
                 put(node.key, node.value);
                 node = node.next;
@@ -133,8 +146,8 @@ public class HashTable<T> {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         boolean first = true;
-        for (Node<T> head : table) {
-            Node<T> node = head;
+        for (Node<V> head : table) {
+            Node<V> node = head;
             while (node != null) {
                 if (!first) {
                     sb.append(", ");
@@ -151,8 +164,8 @@ public class HashTable<T> {
     public Object keySet() {
         Object[] keys = new Object[size];
         int index = 0;
-        for (Node<T> head : table) {
-            Node<T> node = head;
+        for (Node<V> head : table) {
+            Node<V> node = head;
             while (node != null) {
                 keys[index++] = node.key;
                 node = node.next;

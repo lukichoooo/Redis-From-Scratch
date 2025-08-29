@@ -47,5 +47,6 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

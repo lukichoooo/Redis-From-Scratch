@@ -1,4 +1,4 @@
-package model;
+package com.khundadze.model;
 
 public enum ServerType {
     SERVER_NIL,

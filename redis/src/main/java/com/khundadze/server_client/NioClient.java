@@ -1,3 +1,5 @@
+package com.khundadze.server_client;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
