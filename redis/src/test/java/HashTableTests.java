@@ -1,14 +1,13 @@
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import com.khundadze.data_structures.HashTable;
 
 public class HashTableTests {
 
     @Test
     public void testPutAndGet() {
-        HashTable<String> map = new HashTable<>();
+        HashTable<Integer, String> map = new HashTable<>();
         map.put(1, "one");
         map.put(2, "two");
 
@@ -19,7 +18,7 @@ public class HashTableTests {
 
     @Test
     public void testUpdateValue() {
-        HashTable<String> map = new HashTable<>();
+        HashTable<Integer, String> map = new HashTable<>();
         map.put(1, "one");
         map.put(1, "uno"); // update value
 
@@ -28,7 +27,7 @@ public class HashTableTests {
 
     @Test
     public void testRemove() {
-        HashTable<String> map = new HashTable<>();
+        HashTable<Integer, String> map = new HashTable<>();
         map.put(1, "one");
         map.put(2, "two");
 
@@ -41,7 +40,7 @@ public class HashTableTests {
 
     @Test
     public void testContainsKey() {
-        HashTable<String> map = new HashTable<>();
+        HashTable<Integer, String> map = new HashTable<>();
         map.put(1, "one");
 
         assertTrue(map.containsKey(1));
@@ -50,7 +49,7 @@ public class HashTableTests {
 
     @Test
     public void testSize() {
-        HashTable<String> map = new HashTable<>();
+        HashTable<Integer, String> map = new HashTable<>();
         assertEquals(0, map.size());
 
         map.put(1, "one");
@@ -63,7 +62,7 @@ public class HashTableTests {
 
     @Test
     public void testResize() {
-        HashTable<Integer> map = new HashTable<>(2, 0.5f); // small capacity to trigger resize
+        HashTable<Integer, Integer> map = new HashTable<>(2, 0.5f); // small capacity to trigger resize
         map.put(1, 10);
         map.put(2, 20); // should trigger resize
 
@@ -77,12 +76,13 @@ public class HashTableTests {
 
     @Test
     public void testKeySet() {
-        HashTable<String> map = new HashTable<>();
+        HashTable<Integer, String> map = new HashTable<>();
         map.put(1, "one");
         map.put(2, "two");
-        Object[] keys = (Object[]) map.keySet();
 
-        assertTrue(keys.length == 2);
+        Object[] keys = map.keySet();
+
+        assertEquals(2, keys.length);
         assertTrue(keys[0].equals(1) || keys[1].equals(1));
         assertTrue(keys[0].equals(2) || keys[1].equals(2));
     }

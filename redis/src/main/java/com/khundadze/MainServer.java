@@ -1,4 +1,4 @@
-package com.khundadze.mainClasses;
+package com.khundadze;
 
 import com.khundadze.server_client.NioServer;
 

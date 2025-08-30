@@ -21,21 +21,21 @@ class ZSetTests {
         zset.add("Bob", 20, "ValueB");
         zset.add("Charlie", 15, "ValueC");
 
-        assertNotNull(zset.lookup("Alice"));
-        assertEquals(20, zset.lookup("Bob").score);
-        assertEquals("Charlie", zset.lookup("Charlie").name);
-        assertNull(zset.lookup("NonExistent"));
+        assertNotNull(zset.get("Alice"));
+        assertEquals(20, zset.get("Bob").score);
+        assertEquals("Charlie", zset.get("Charlie").name);
+        assertNull(zset.get("NonExistent"));
     }
 
     @Test
     void testUpdateScore() {
         zset.add("Alice", 10, "ValueA");
-        double oldScore = zset.lookup("Alice").score;
+        double oldScore = zset.get("Alice").score;
 
         // update Alice's score
         zset.add("Alice", 30, "ValueA_updated");
-        assertEquals(30, zset.lookup("Alice").score);
-        assertNotEquals(oldScore, zset.lookup("Alice").score);
+        assertEquals(30, zset.get("Alice").score);
+        assertNotEquals(oldScore, zset.get("Alice").score);
     }
 
     @Test
@@ -44,7 +44,7 @@ class ZSetTests {
         zset.add("Bob", 20, "ValueB");
 
         assertTrue(zset.remove("Alice"));
-        assertNull(zset.lookup("Alice"));
+        assertNull(zset.get("Alice"));
 
         // Removing non-existent element should return false
         assertFalse(zset.remove("NonExistent"));

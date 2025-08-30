@@ -7,14 +7,17 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.khundadze.data_structures.HashTable;
+import com.khundadze.data_structures.ZSet;
 
 import com.khundadze.model.*;
+
+// TODO: update server to use ZSet
 
 public class NioServer {
 
@@ -22,11 +25,11 @@ public class NioServer {
 
     HashSet<SocketChannel> clients = null;
 
-    HashTable<Object> hashTable;
+    ZSet<Object> zs;
 
     public NioServer() {
         clients = new HashSet<>();
-        hashTable = new HashTable<>();
+        zs = new ZSet<>();
     }
 
     public void start(final int portNumber) {
@@ -118,30 +121,31 @@ public class NioServer {
         buffer.get(data);
 
         String message = new String(data).trim();
-        String[] parts = message.split(" ", 3);
+        String[] parts = message.split(" ", 4);
 
         Command command = Command.valueOf(parts[0]);
-        int key = Integer.parseInt(parts[1]);
+        String name = parts.length > 1 ? parts[1] : null;
         Object value = parts.length > 2 ? parts[2] : null;
+        Double score = parts.length > 3 ? Double.parseDouble(parts[3]) : 1.0;
 
-        return new RequestDto(command, key, value);
+        return new RequestDto(command, name, value, score);
     }
 
     private ResponseDto handleRequest(RequestDto request) {
         switch (request.command()) {
             case SET -> {
-                hashTable.put(request.key(), request.value());
+                zs.add(request.name(), request.score(), request.value());
                 return new ResponseDto(ServerType.SERVER_STRING, "OK");
             }
             case DEL -> {
-                hashTable.remove(request.key());
+                zs.remove(request.name());
                 return new ResponseDto(ServerType.SERVER_STRING, "OK");
             }
             case GET -> {
-                return new ResponseDto(ServerType.SERVER_STRING, hashTable.get(request.key()));
+                return new ResponseDto(ServerType.SERVER_STRING, zs.get(request.name()));
             }
             case KEYS -> {
-                return new ResponseDto(ServerType.SERVER_ARRAY, hashTable.keySet());
+                return new ResponseDto(ServerType.SERVER_ARRAY, Arrays.toString(zs.keySet()));
             }
             default -> {
                 return new ResponseDto(ServerType.SERVER_ERROR, "Unknown command");

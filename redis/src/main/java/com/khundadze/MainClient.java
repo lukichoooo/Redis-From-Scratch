@@ -1,4 +1,4 @@
-package com.khundadze.mainClasses;
+package com.khundadze;
 
 import java.util.Scanner;
 

@@ -2,9 +2,45 @@ package com.khundadze.data_structures;
 
 public class ZSet<V> {
 
+    /** Sort by score, then by name (like Redis ZSET) */
+    private static class ScoreKey implements Comparable<ScoreKey> {
+        final double score;
+        final String name;
+
+        ScoreKey(double score, String name) {
+            this.score = score;
+            this.name = name;
+        }
+
+        @Override
+        public int compareTo(ScoreKey other) {
+            int c = Double.compare(this.score, other.score);
+            if (c != 0)
+                return c;
+            return this.name.compareTo(other.name);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ScoreKey k))
+                return false;
+            return Double.compare(score, k.score) == 0 && name.equals(k.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * Double.hashCode(score) + name.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "(" + score + ", " + name + ")";
+        }
+    }
+
     public static class ZNode<V> {
-        SkipList.Node<ZNode<V>> listNode; // pointer in skip list
-        HashTable.Node<ZNode<V>> mapNode; // pointer in hash table
+        SkipList.Node<ScoreKey, ZNode<V>> listNode; // pointer in skip list
+        HashTable.Node<String, ZNode<V>> mapNode; // pointer in hash table
         public double score;
         public String name;
         public V value;
@@ -17,72 +53,69 @@ public class ZSet<V> {
 
         @Override
         public String toString() {
-            return "(" + name + ", score=" + score + ")";
+            return "(" + name + ", score=" + score + ", value=" + value + ")";
         }
     }
 
-    private final HashTable<ZNode<V>> ht;
-    private final SkipList<ZNode<V>> sl;
+    private final HashTable<String, ZNode<V>> ht;
+    private final SkipList<ScoreKey, ZNode<V>> sl;
 
     public ZSet() {
-        ht = new HashTable<>();
-        sl = new SkipList<>();
+        this.ht = new HashTable<>();
+        this.sl = new SkipList<>();
     }
 
-    // Combine score + name into sortable int key
-    private int scoreKey(double score, String name) {
-        return (int) score * 31 + name.hashCode();
-    }
-
-    // Add or update node
+    /** Add or update node */
     public void add(String name, double score, V value) {
-        int key = name.hashCode();
-        ZNode<V> node = ht.get(key);
+        ZNode<V> node = ht.get(name);
 
         if (node != null) {
-            // update score/value
             node.value = value;
-            if (node.score != score) {
-                // remove old skiplist position
+            if (Double.compare(node.score, score) != 0) {
+                // remove old position and reinsert with new score
                 sl.remove(node.listNode.key);
-
                 node.score = score;
-                // re-insert in skiplist
-                node.listNode = sl.insert(scoreKey(score, name), node);
+                node.listNode = sl.insert(new ScoreKey(score, name), node);
             }
         } else {
             node = new ZNode<>(name, score, value);
-            node.mapNode = ht.put(key, node); // store pointer in hash table
-            node.listNode = sl.insert(scoreKey(score, name), node); // store pointer in skiplist
+            node.mapNode = ht.put(name, node); // store in hash table by real key
+            node.listNode = sl.insert(new ScoreKey(score, name), node); // store in skiplist by (score,name)
         }
     }
 
     public boolean remove(String name) {
-        int key = name.hashCode();
-        ZNode<V> node = ht.get(key);
+        ZNode<V> node = ht.get(name);
         if (node == null)
             return false;
-
-        sl.remove(node.listNode.key); // remove via skiplist pointer
-        ht.remove(key); // remove via hash key
+        sl.remove(node.listNode.key);
+        ht.remove(name);
         return true;
     }
 
-    public ZNode<V> lookup(String name) {
-        return ht.get(name.hashCode());
+    public ZNode<V> get(String name) {
+        return ht.get(name);
     }
 
-    // Query: first node >= (score, name) and move offset steps forward
+    public int size() {
+        return ht.size();
+    }
+
+    public boolean isEmpty() {
+        return ht.isEmpty();
+    }
+
+    public String[] keySet() {
+        return ht.keySet(); // returns the actual String keys now
+    }
+
+    /** First node >= (score,name), then move 'offset' steps forward */
     public ZNode<V> query(double score, String name, int offset) {
-        if (offset < 0) {
+        if (offset < 0)
             throw new UnsupportedOperationException("Backward queries are not supported");
-        }
-
-        SkipList.Node<ZNode<V>> node = sl.ceiling(scoreKey(score, name));
-        for (int i = 0; i < offset && node != null; i++) {
-            node = node.next[0];
-        }
-        return node != null ? node.value : null;
+        SkipList.Node<ScoreKey, ZNode<V>> n = sl.ceiling(new ScoreKey(score, name));
+        for (int i = 0; i < offset && n != null; i++)
+            n = n.next[0];
+        return n != null ? n.value : null;
     }
-
 }

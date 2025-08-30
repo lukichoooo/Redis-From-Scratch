@@ -2,15 +2,15 @@ package com.khundadze.data_structures;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class SkipList<V> {
+public class SkipList<K extends Comparable<K>, V> {
 
-    public static class Node<V> {
-        final int key;
-        V value;
-        final Node<V>[] next;
+    public static class Node<K, V> {
+        final public K key;
+        public V value;
+        final public Node<K, V>[] next;
 
         @SuppressWarnings("unchecked")
-        Node(int key, V value, int level) {
+        Node(K key, V value, int level) {
             this.key = key;
             this.value = value;
             this.next = new Node[level + 1];
@@ -22,18 +22,17 @@ public class SkipList<V> {
         }
     }
 
-    private final int MAX_LEVEL = 16;
-    private final Node<V> head;
+    private static final int MAX_LEVEL = 16;
+    private final Node<K, V> head;
     private int level = 0;
     private int size = 0;
 
     public SkipList() {
-        head = new Node<>(Integer.MIN_VALUE, null, MAX_LEVEL);
+        head = new Node<>(null, null, MAX_LEVEL);
     }
 
     private int randomLevel() {
         int lvl = 0;
-        // each iteration has ~50% chance to increase level
         while (lvl < MAX_LEVEL && ThreadLocalRandom.current().nextBoolean()) {
             lvl++;
         }
@@ -48,35 +47,35 @@ public class SkipList<V> {
         return size == 0;
     }
 
-    public boolean containsKey(int key) {
+    public boolean containsKey(K key) {
         return get(key) != null;
     }
 
-    public Node<V> ceiling(int key) {
-        Node<V> x = head;
+    public Node<K, V> ceiling(K key) {
+        Node<K, V> x = head;
         for (int i = level; i >= 0; i--) {
-            while (x.next[i] != null && x.next[i].key < key) {
+            while (x.next[i] != null && x.next[i].key.compareTo(key) < 0) {
                 x = x.next[i];
             }
         }
         return x.next[0]; // first node >= key
     }
 
-    // Insert or replace value for existing key
-    public Node<V> insert(int key, V value) {
+    // Insert or replace value
+    public Node<K, V> insert(K key, V value) {
         @SuppressWarnings("unchecked")
-        Node<V>[] update = new Node[MAX_LEVEL + 1];
-        Node<V> u = head;
+        Node<K, V>[] update = new Node[MAX_LEVEL + 1];
+        Node<K, V> u = head;
 
         for (int i = level; i >= 0; --i) {
-            while (u.next[i] != null && u.next[i].key < key) {
+            while (u.next[i] != null && u.next[i].key.compareTo(key) < 0) {
                 u = u.next[i];
             }
             update[i] = u;
         }
 
-        Node<V> candidate = u.next[0];
-        if (candidate != null && candidate.key == key) {
+        Node<K, V> candidate = u.next[0];
+        if (candidate != null && candidate.key.equals(key)) {
             candidate.value = value;
             return candidate;
         }
@@ -89,9 +88,8 @@ public class SkipList<V> {
             level = lvl;
         }
 
-        Node<V> newNode = new Node<>(key, value, lvl);
+        Node<K, V> newNode = new Node<>(key, value, lvl);
 
-        // link the new node at all its levels
         for (int i = 0; i <= lvl; i++) {
             newNode.next[i] = update[i].next[i];
             update[i].next[i] = newNode;
@@ -101,21 +99,21 @@ public class SkipList<V> {
         return newNode;
     }
 
-    public Node<V> remove(int key) {
+    public Node<K, V> remove(K key) {
         @SuppressWarnings("unchecked")
-        Node<V>[] update = new Node[MAX_LEVEL + 1];
-        Node<V> u = head;
+        Node<K, V>[] update = new Node[MAX_LEVEL + 1];
+        Node<K, V> u = head;
 
         for (int i = level; i >= 0; i--) {
-            while (u.next[i] != null && u.next[i].key < key) {
+            while (u.next[i] != null && u.next[i].key.compareTo(key) < 0) {
                 u = u.next[i];
             }
             update[i] = u;
         }
 
-        Node<V> target = u.next[0];
-        if (target == null || target.key != key) {
-            return null; // not found
+        Node<K, V> target = u.next[0];
+        if (target == null || !target.key.equals(key)) {
+            return null;
         }
 
         for (int i = 0; i <= level; i++) {
@@ -136,25 +134,22 @@ public class SkipList<V> {
         return target;
     }
 
-    public Node<V> get(int key) {
-        Node<V> u = head;
+    public Node<K, V> get(K key) {
+        Node<K, V> u = head;
         for (int i = level; i >= 0; i--) {
-            while (u.next[i] != null && u.next[i].key < key) {
+            while (u.next[i] != null && u.next[i].key.compareTo(key) < 0) {
                 u = u.next[i];
             }
         }
         u = u.next[0];
-        if (u != null && u.key == key)
-            return u;
-        return null;
+        return (u != null && u.key.equals(key)) ? u : null;
     }
 
-    // pretty print level-0 list plus metadata
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("SkipList(size=").append(size).append(", level=").append(level).append(") [");
-        Node<V> u = head.next[0];
+        Node<K, V> u = head.next[0];
         while (u != null) {
             sb.append(u);
             u = u.next[0];

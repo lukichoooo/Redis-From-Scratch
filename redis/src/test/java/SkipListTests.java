@@ -1,7 +1,5 @@
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import com.khundadze.data_structures.SkipList;
 
 import java.util.HashSet;
@@ -12,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SkipListTests {
 
-    private SkipList<String> sl;
+    private SkipList<Integer, String> sl;
 
     @BeforeEach
     void setUp() {
@@ -22,15 +20,15 @@ public class SkipListTests {
     @Test
     void testInsertGetReplaceAndSize() {
         sl.insert(10, "ten");
-        assertEquals(1, sl.size(), "size after one insert");
-        assertNotNull(sl.get(10), "get should find inserted key (node present)");
-        assertTrue(sl.containsKey(10), "containsKey should be true after insert");
+        assertEquals(1, sl.size(), "Size after one insert");
+        assertNotNull(sl.get(10), "Get should find inserted key");
+        assertTrue(sl.containsKey(10), "ContainsKey should be true after insert");
         assertTrue(sl.toString().contains("10:ten"), "toString should contain 10:ten");
 
-        // replace value for existing key
+        // Replace value for existing key
         sl.insert(10, "TEN");
-        assertEquals(1, sl.size(), "size should remain 1 after replace");
-        assertNotNull(sl.get(10));
+        assertEquals(1, sl.size(), "Size should remain 1 after replace");
+        assertEquals("TEN", sl.get(10).value, "Value should be updated to TEN");
         assertTrue(sl.toString().contains("10:TEN"), "toString should reflect replaced value");
     }
 
@@ -40,21 +38,21 @@ public class SkipListTests {
         sl.insert(2, "two");
         assertEquals(2, sl.size());
 
-        Object removed = sl.remove(1);
-        assertNotNull(removed, "remove should return non-null for existing key");
-        assertNull(sl.get(1), "get should return null after removal");
-        assertEquals(1, sl.size(), "size should decrement after removal");
+        var removed = sl.remove(1);
+        assertNotNull(removed, "Remove should return non-null for existing key");
+        assertNull(sl.get(1), "Get should return null after removal");
+        assertEquals(1, sl.size(), "Size should decrement after removal");
         assertFalse(sl.toString().contains("1:one"), "toString should not contain removed entry");
     }
 
     @Test
     void testRemoveNonexistentAndIsEmpty() {
-        assertNull(sl.remove(42), "removing non-existent key returns null");
-        assertTrue(sl.isEmpty(), "empty after no inserts");
+        assertNull(sl.remove(42), "Removing non-existent key returns null");
+        assertTrue(sl.isEmpty(), "Empty after no inserts");
 
         sl.insert(5, "five");
-        assertFalse(sl.isEmpty());
-        assertNull(sl.get(999), "getting non-existent key returns null");
+        assertFalse(sl.isEmpty(), "Not empty after insert");
+        assertNull(sl.get(999), "Getting non-existent key returns null");
     }
 
     @Test
@@ -71,7 +69,7 @@ public class SkipListTests {
 
     @Test
     void testRandomizedOperationsConsistency() {
-        SkipList<Integer> s2 = new SkipList<>();
+        SkipList<Integer, Integer> s2 = new SkipList<>();
         Random rnd = new Random(123);
         Set<Integer> reference = new HashSet<>();
 
@@ -79,26 +77,26 @@ public class SkipListTests {
         for (int op = 0; op < OPS; op++) {
             int key = rnd.nextInt(200);
             if (rnd.nextBoolean()) {
-                // insert
+                // Insert
                 s2.insert(key, key);
                 reference.add(key);
             } else {
-                // remove
-                Object removed = s2.remove(key);
+                // Remove
+                var removed = s2.remove(key);
                 if (reference.contains(key)) {
-                    assertNotNull(removed, "remove should succeed when key present: " + key);
+                    assertNotNull(removed, "Remove should succeed when key present: " + key);
                     reference.remove(key);
                 } else {
-                    assertNull(removed, "remove should return null when key absent: " + key);
+                    assertNull(removed, "Remove should return null when key absent: " + key);
                 }
             }
-            // check size and presence parity with reference set
-            assertEquals(reference.size(), s2.size(), "size should match reference set");
+
+            // Check size and presence parity
+            assertEquals(reference.size(), s2.size(), "Size should match reference set");
             for (int checkKey : new int[] { 0, 1, 50, 100, 150, 199 }) {
                 boolean presentInRef = reference.contains(checkKey);
                 boolean presentInSkip = s2.containsKey(checkKey);
-                assertEquals(presentInRef, presentInSkip,
-                        "presence parity for key " + checkKey);
+                assertEquals(presentInRef, presentInSkip, "Presence parity for key " + checkKey);
             }
         }
     }

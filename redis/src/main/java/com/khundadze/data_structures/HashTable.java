@@ -1,13 +1,13 @@
 package com.khundadze.data_structures;
 
-public class HashTable<V> {
+public class HashTable<K, V> {
 
-    public static class Node<V> {
-        final int key;
+    public static class Node<K, V> {
+        final K key;
         V value;
-        Node<V> next;
+        Node<K, V> next;
 
-        Node(int key, V value) {
+        Node(K key, V value) {
             this.key = key;
             this.value = value;
         }
@@ -18,7 +18,7 @@ public class HashTable<V> {
         }
     }
 
-    private Node<V>[] table;
+    private Node<K, V>[] table;
     private int size;
     private int capacity;
     private final float loadFactor;
@@ -53,34 +53,34 @@ public class HashTable<V> {
         this.table = new Node[this.capacity];
     }
 
-    private int hash(int key) {
-        int h = key;
+    private int hash(Object key) {
+        int h = key.hashCode();
         h ^= (h >>> 16);
         return h & (capacity - 1);
     }
 
-    public Node<V> put(int key, V value) {
+    public Node<K, V> put(K key, V value) {
         if (size >= capacity * loadFactor) {
             resize();
         }
         int index = hash(key);
-        for (Node<V> node = table[index]; node != null; node = node.next) {
-            if (node.key == key) {
+        for (Node<K, V> node = table[index]; node != null; node = node.next) {
+            if (node.key.equals(key)) {
                 node.value = value;
-                return null;
+                return node;
             }
         }
-        Node<V> newNode = new Node<>(key, value);
+        Node<K, V> newNode = new Node<>(key, value);
         newNode.next = table[index];
         table[index] = newNode;
         size++;
         return newNode;
     }
 
-    public V get(int key) {
+    public V get(K key) {
         int index = hash(key);
-        for (Node<V> node = table[index]; node != null; node = node.next) {
-            if (node.key == key) {
+        for (Node<K, V> node = table[index]; node != null; node = node.next) {
+            if (node.key.equals(key)) {
                 return node.value;
             }
         }
@@ -91,17 +91,17 @@ public class HashTable<V> {
         return size == 0;
     }
 
-    public boolean containsKey(int key) {
+    public boolean containsKey(K key) {
         return get(key) != null;
     }
 
-    public V remove(int key) {
+    public V remove(K key) {
         int index = hash(key);
-        Node<V> node = table[index];
-        Node<V> prev = null;
+        Node<K, V> node = table[index];
+        Node<K, V> prev = null;
 
         while (node != null) {
-            if (node.key == key) {
+            if (node.key.equals(key)) {
                 if (prev == null) {
                     table[index] = node.next;
                 } else {
@@ -124,12 +124,12 @@ public class HashTable<V> {
         }
 
         capacity = oldCapacity << 1;
-        Node<V>[] oldTable = table;
+        Node<K, V>[] oldTable = table;
         table = new Node[capacity];
         size = 0;
 
-        for (Node<V> head : oldTable) {
-            Node<V> node = head;
+        for (Node<K, V> head : oldTable) {
+            Node<K, V> node = head;
             while (node != null) {
                 put(node.key, node.value);
                 node = node.next;
@@ -141,13 +141,26 @@ public class HashTable<V> {
         return size;
     }
 
+    public String[] keySet() {
+        String[] keys = new String[size];
+        int index = 0;
+        for (Node<K, V> head : table) {
+            Node<K, V> node = head;
+            while (node != null) {
+                keys[index++] = (String) node.key;
+                node = node.next;
+            }
+        }
+        return keys;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         boolean first = true;
-        for (Node<V> head : table) {
-            Node<V> node = head;
+        for (Node<K, V> head : table) {
+            Node<K, V> node = head;
             while (node != null) {
                 if (!first) {
                     sb.append(", ");
@@ -159,18 +172,5 @@ public class HashTable<V> {
         }
         sb.append("}");
         return sb.toString();
-    }
-
-    public Object keySet() {
-        Object[] keys = new Object[size];
-        int index = 0;
-        for (Node<V> head : table) {
-            Node<V> node = head;
-            while (node != null) {
-                keys[index++] = node.key;
-                node = node.next;
-            }
-        }
-        return keys;
     }
 }

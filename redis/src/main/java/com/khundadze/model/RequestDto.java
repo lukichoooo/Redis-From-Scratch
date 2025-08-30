@@ -2,7 +2,8 @@ package com.khundadze.model;
 
 public record RequestDto(
                 Command command,
-                Integer key,
-                Object value) {
+                String name,
+                Object value,
+                Double score) {
 
 }
